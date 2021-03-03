@@ -25,6 +25,7 @@ geotab.addin.proximity = () => {
     let elExport;
     let elRun;
     let elUserInput;
+    let elvehicleTotalMessage;
 
     let radiusFactor = 250;
     let deviceLookup = {};
@@ -427,6 +428,7 @@ geotab.addin.proximity = () => {
         elExport = document.getElementById('proximity-run-report');
         elRun = document.getElementById('proximity-run-cancel');
         elUserInput = document.getElementById('proximity-userInput');
+        elvehicleTotalMessage = document.getElementById('proximity-vehicleTotalMessage');
 
         // date inputs
         let now = new Date();
@@ -449,7 +451,7 @@ geotab.addin.proximity = () => {
         sizeChanged(300);
 
         // initialize multiselect/autocomplte
-        vehicleMultiselect = new Choices(elVehicleSelect, {removeItemButton: true, duplicateItemsAllowed: false, searchResultLimit: 1000, maxItemCount: 1000, noChoicesText: 'Start typing to search for vehicles'});
+        vehicleMultiselect = new Choices(elVehicleSelect, {removeItemButton: true, duplicateItemsAllowed: false, searchResultLimit: 1000, noChoicesText: 'Start typing to search for vehicles'});
 
         // events
         elVehicleMultiSelectContainer.addEventListener('keyup', debounce(e => {
@@ -467,7 +469,6 @@ geotab.addin.proximity = () => {
                         groups: state.getGroupFilter(),
                         name: manualSearch,
                     },
-                    resultsLimit: 1000
                 }, newDevices => {
                     if (!newDevices || newDevices.length < 1) {
                         return;
@@ -516,7 +517,6 @@ geotab.addin.proximity = () => {
                     fromDate: new Date().toISOString(),
                     groups: state.getGroupFilter()
                 },
-                resultsLimit: 1000
             }, result => {
                 resolve(result);
             });
@@ -525,29 +525,18 @@ geotab.addin.proximity = () => {
         elProximitySelectAll.addEventListener('click', async () => {    
             toggleLoading(true);        
             logger('');
-             
-            if(Object.keys(deviceLookup).length === 0 && selected.length === 0){  
+            if(selected.length === 0){  
                 let currentScope = await currentDevicesInUserScope();
                 let alldeviceList = [];
+                elVehicleMultiSelectContainer.hidden = true;  
+                elvehicleTotalMessage.hidden = false;            
+                elvehicleTotalMessage.value = currentScope.length + ' vehicles have been selected.';
 
                 for (var i = 0; i < currentScope.length; i++) {
                     alldeviceList.push(currentScope[i])
                     selected.push(currentScope[i].id);
-                }
-
-                let allChoices = alldeviceList.map(device => {
-                    deviceLookup[device.id] = device;
-                    return { 'value': device.id, 'label': encodeHTML(device.name) };
-                });
-
-                if(currentScope.length === 1000){
-                    logger('1000 vehicle limit reached. The proximity add-in will show 1000 vehicles only.');
-                    vehicleMultiselect.disable();
-                }
-                else{
-                    vehicleMultiselect.setValue(allChoices);
-                }
-                console.log('Devices included: ', allChoices);             
+                    deviceLookup[currentScope[i].id] = currentScope[i];                  
+                }        
             }                
             else{
                 var temp = [];
@@ -556,15 +545,8 @@ geotab.addin.proximity = () => {
                         continue;
                     }
                     else {
-                        if(selected.length < 1000){
-                            selected.push(vehicle);       
-                            temp.push({ 'value': vehicle, 'label': deviceLookup[vehicle].name })
-                        }
-                        else{
-                            logger('1000 vehicle limit reached.')
-                            vehicleMultiselect.clearChoices();
-                            break;
-                        }
+                        selected.push(vehicle);       
+                        temp.push({ 'value': vehicle, 'label': deviceLookup[vehicle].name })                      
                     }       
                 }               
                 vehicleMultiselect.setValue(temp); 
@@ -577,6 +559,8 @@ geotab.addin.proximity = () => {
         elProximityDeselectAll.addEventListener('click', () => {
             vehicleMultiselect.clearStore();
             vehicleMultiselect.enable();
+            elVehicleMultiSelectContainer.hidden = false;  
+            elvehicleTotalMessage.hidden = true; 
             clearMap();
             logger('');
             selected = [];
@@ -691,30 +675,42 @@ geotab.addin.proximity = () => {
             api = freshApi;
             state = freshState;
 
-            if (hamsters.init) {
-                hamsters.init({
-                    debug: 'verbose'
-                });
-            }
+            api.getSession(token => {
+                if(token.database === 'g560'){
+                    document.getElementById('proximity-accessDenied').hidden = true;
+                    document.getElementById('proximity-accessGranted').hidden = false;
 
-            getUserIsMetric(isMetric => {
-                const defaultMapView = { longitude: -79.709441, latitude: 43.434497 };
-
-                if ('geolocation' in navigator) {
-                    navigator.geolocation.getCurrentPosition(position => {
-                        initializeInterface(isMetric, position.coords);
-                        callback();
-                    }, _ => {
-                        initializeInterface(isMetric, defaultMapView);
-                        callback();
-                    }, {
-                        timeout: 5000
+                    if (hamsters.init) {
+                        hamsters.init({
+                            debug: 'verbose'
+                        });
+                    }
+        
+                    getUserIsMetric(isMetric => {
+                        const defaultMapView = { longitude: -79.709441, latitude: 43.434497 };
+        
+                        if ('geolocation' in navigator) {
+                            navigator.geolocation.getCurrentPosition(position => {
+                                initializeInterface(isMetric, position.coords);
+                                callback();
+                            }, _ => {
+                                initializeInterface(isMetric, defaultMapView);
+                                callback();
+                            }, {
+                                timeout: 5000
+                            });
+                        } else {
+                            initializeInterface(isMetric, defaultMapView);
+                            callback();
+                        }
                     });
-                } else {
-                    initializeInterface(isMetric, defaultMapView);
-                    callback();
+
                 }
-            });
+                else{
+                    document.getElementById('proximity-accessDenied').hidden = false;
+                    document.getElementById('proximity-accessGranted').hidden = true;
+                }
+            }, false);              
         },
 
         /**

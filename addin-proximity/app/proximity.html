@@ -43,21 +43,21 @@
 <body>
 
     <div id="proximity" style="height: 100%">
+        <div id = "proximity-accessDenied">
+            <h2>This version of the Proximity Add-in is limited to select customers. Please remove this add-in as you are not authorized to use it."</h2>
+        </div>
 
-        <div class="cssGrid sm-part-12">
+        <div id = "proximity-accessGranted" class="cssGrid sm-part-12" hidden>
             <div class="lg-part-2 md-part-3 sm-part-12">
                 <div id="proximity-controls">
 
-                    <h2>Proximity</h2>
+                    <h2><strong>Proximity</strong></h2>
                     <p>
                         This Add-In allows looking up an address to visualize when your fleet was nearby that location in the past.
                     </p>
                     <p>
                         Find out when team members visited an address by typing it in below. Filter your results by selecting specific vehicles or
                         narrowing the time frame shown.
-                    </p>
-                    <p>
-                        <strong>This add-in will display a maximum of 1000 vehicles at a time. </strong>
                     </p>
 
                     <div>
@@ -79,6 +79,8 @@
                                 <select id="proximity-vehicles" multiple data-placeholder="Select vehicles" class="checkmateFormEditField"></select>
                             </div>
 
+                            <textarea id="proximity-vehicleTotalMessage" disabled hidden></textarea>
+                            
                             <label for="proximity-from">From</label>
                             <input id="proximity-from" type="datetime-local" class="checkmateFormEditField" />
 

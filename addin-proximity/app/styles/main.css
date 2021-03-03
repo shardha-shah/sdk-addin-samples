@@ -103,3 +103,26 @@ input[type="range"] {
     margin-top: 20px;
     color: #cc0000;
 }
+
+#proximity-accessDenied{
+    border: 1px solid #ffeb94;
+    background-color: #fffcdd;
+    color: #966d00;
+    fill: #966d00;
+    margin: 0 auto;
+    text-align: center;
+    padding: 5px;
+    width: 70%;
+}
+
+#proximity-vehicleTotalMessage{
+    width: calc(100% - 1.5em);
+    border: 1px solid #c5dbec;
+    background-color: #fefefe;
+    border-radius: 0.4em;
+    height: 150px;
+    resize: none;
+    font-family: "Arial";
+    padding-top: 65px;
+    text-align: center;
+}
