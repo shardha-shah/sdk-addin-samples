@@ -565,6 +565,7 @@ geotab.addin.proximity = () => {
             logger('');
             selected = [];
             deviceLookup = {};
+            elAddressInput.value = '';
         });
 
         vehicleMultiselect.passedElement.element.addEventListener('change', () => {
@@ -709,6 +710,7 @@ geotab.addin.proximity = () => {
                 else{
                     document.getElementById('proximity-accessDenied').hidden = false;
                     document.getElementById('proximity-accessGranted').hidden = true;
+                    callback();
                 }
             }, false);              
         },
@@ -729,9 +731,21 @@ geotab.addin.proximity = () => {
             state = freshState;
 
             // focus is called anytime filter changes.
-            isCancelled = true;
-            deviceLookup = {};
-            toggleLoading(false);
+            api.getSession(token => {
+                if(token.database === 'g560'){
+                    isCancelled = true;
+                    deviceLookup = {};
+                    selected = [];
+                    vehicleMultiselect.clearStore();
+                    vehicleMultiselect.enable();
+                    elVehicleMultiSelectContainer.hidden = false;  
+                    elvehicleTotalMessage.hidden = true; 
+                    elAddressInput.value = '';
+                    clearMap();
+                    logger('');
+                    toggleLoading(false);
+                }
+            }, false);
         },
 
         /**
