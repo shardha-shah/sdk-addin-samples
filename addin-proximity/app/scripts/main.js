@@ -732,7 +732,7 @@ geotab.addin.proximity = () => {
 
             // focus is called anytime filter changes.
             api.getSession(token => {
-                if(token.database === 'g560'){
+                if(token.database === 'rumpke_waste_recycling'){
                     isCancelled = true;
                     deviceLookup = {};
                     selected = [];
