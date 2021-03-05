@@ -677,7 +677,7 @@ geotab.addin.proximity = () => {
             state = freshState;
 
             api.getSession(token => {
-                if(token.database === 'g560'){
+                if(token.database === 'rumpke_waste_recycling'){
                     document.getElementById('proximity-accessDenied').hidden = true;
                     document.getElementById('proximity-accessGranted').hidden = false;
 
